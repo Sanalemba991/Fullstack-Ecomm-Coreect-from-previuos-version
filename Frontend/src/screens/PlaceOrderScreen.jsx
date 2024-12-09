@@ -1,19 +1,20 @@
-import React, { useContext, useEffect, useReducer } from 'react';
-import CheckoutSteps from '../components/CheckoutSteps';
-import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
-import { Store } from '../Store.jsx';
-
-import {Loading} from "../components/Loading.jsx"
+import React, { useContext, useEffect, useReducer } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link, useNavigate } from "react-router-dom";
+import { Store } from "../Store";
+import { getError } from "./util.jsx";
+import {toast }from "react-toastify";
+import axios from 'axios';
+import CheckoutSteps from "../components/CheckoutSteps";
 
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'CREATE_REQUEST':
+    case "CREATE_REQUEST":
       return { ...state, loading: true };
-    case 'CREATE_SUCCESS':
+    case "CREATE_SUCCESS":
       return { ...state, loading: false };
-    case 'CREATE_FAIL':
+    case "CREATE_FAIL":
       return { ...state, loading: false };
     default:
       return state;
@@ -24,28 +25,30 @@ function PlaceOrderScreen() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
   const navigate = useNavigate();
-  const [{loading},dispatch]=useReducer(reducer,{
-    loading:false,
-    
-  });
+  const [{ loading }, dispatch] = useReducer(reducer, { loading: false });
 
   // Helper function to round numbers to two decimal places
   const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100;
 
   // Calculate cart prices
-  cart.itemsPrice = round2(
-    cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
-  );
+  cart.itemsPrice = round2(cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0));
   cart.shippingPrice = cart.itemsPrice > 0 ? round2(10) : 0;
   cart.taxPrice = round2(0.15 * cart.itemsPrice);
   cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
 
+  // Redirect to payment if no payment method is selected
+  useEffect(() => {
+    if (!cart.paymentMethod) {
+      navigate("/payment");
+    }
+  }, [cart, navigate]);
+
+  // Handler to place the order
   const placeOrderHandler = async () => {
     try {
-      dispatch({ type: 'CREATE_REQUEST' });
-
-      const { data } = await Axios.post(
-        '/api/orders',
+      ctxDispatch({ type: "CREATE_REQUEST" });
+      const { data } = await axios.post(
+        "http://localhost:4000/api/order",
         {
           orderItems: cart.cartItems,
           shippingAddress: cart.shippingAddress,
@@ -56,9 +59,7 @@ function PlaceOrderScreen() {
           totalPrice: cart.totalPrice,
         },
         {
-          headers: {
-            authorization: `Bearer ${userInfo.token}`,
-          },
+          headers: { authorization: `Bearer ${userInfo.token}` },
         }
       );
       ctxDispatch({ type: 'CART_CLEAR' });
@@ -69,23 +70,6 @@ function PlaceOrderScreen() {
       dispatch({ type: 'CREATE_FAIL' });
       toast.error(getError(err));
     }
-  };
-  // Redirect to payment if no payment method is selected
-  useEffect(() => {
-    if (!cart.paymentMethod) {
-      navigate('/payment');
-    }
-  }, [cart, navigate]);
-
-  // Handler to place the order
-  const PlaceOrderHandler = async () => {
-    if (cart.cartItems.length === 0) {
-      alert('Your cart is empty. Please add items before placing an order.');
-      return;
-    }
-    // Place the order logic (e.g., API call)
-    // ctxDispatch({ type: 'PLACE_ORDER', payload: orderData });
-    navigate('/order-summary'); // Navigate to order summary page (example)
   };
 
   return (
@@ -110,7 +94,8 @@ function PlaceOrderScreen() {
               <div className="flex flex-col">
                 <strong className="text-lg">Address:</strong>
                 <span className="text-gray-700">
-                  {cart.shippingAddress.address}, {cart.shippingAddress.city}, {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
+                  {cart.shippingAddress.address}, {cart.shippingAddress.city}, 
+                  {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
                 </span>
               </div>
               <Link to="/shipping" className="text-blue-600 hover:underline">Edit</Link>
@@ -135,7 +120,11 @@ function PlaceOrderScreen() {
             <div>
               {cart.cartItems.map((item) => (
                 <div key={item._id} className="flex justify-between items-center mb-4">
-                  <img src={item.image} alt={item.name} className="w-20 h-20 object-cover" />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-20 h-20 object-cover"
+                  />
                   <Link to={`/product/${item.slug}`} className="text-blue-600 hover:underline">
                     {item.name}
                   </Link>
@@ -173,15 +162,16 @@ function PlaceOrderScreen() {
 
           <button
             type="button"
-            onClick={PlaceOrderHandler}
+            onClick={placeOrderHandler}
             disabled={cart.cartItems.length === 0}
             className="w-full bg-blue-600 text-white py-2 mt-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
           >
             Place Order
           </button>
-          {loading && <Loading></Loading>}
         </div>
       </div>
+
+ 
     </div>
   );
 }

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import seedRouter from "./routes/seedRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import UserRouter from "./routes/userRoutes.js";
+import orderRouter from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use("/api/seed", seedRouter);
 // Corrected route for products
 app.use("/api/products", productRouter);  // Fixed typo here
 app.use("/api/users", UserRouter);
+app.use("/api/order,",orderRouter)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
