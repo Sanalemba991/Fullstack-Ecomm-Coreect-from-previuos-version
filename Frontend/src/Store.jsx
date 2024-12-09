@@ -5,11 +5,9 @@ export const Store = createContext();
 
 // Initial state for the store
 const initialState = {
-  userInfo: {
-    cartItems: localStorage.getItem("userInfo")
-      ? JSON.parse(localStorage.getItem("userInfo"))
-      : null,
-  },
+  userInfo: localStorage.getItem("userInfo")
+    ? JSON.parse(localStorage.getItem("userInfo"))
+    : null,
   cart: {
     shippingAddress: localStorage.getItem('shippingAddress')
       ? JSON.parse(localStorage.getItem('shippingAddress'))
@@ -62,9 +60,17 @@ function reducer(state, action) {
       return { ...state, cart: { ...state.cart, cartItems: [] } };
 
     case "USER_SIGNIN":
+      // Set user info in the state and localStorage
+      localStorage.setItem("userInfo", JSON.stringify(action.payload));
       return { ...state, userInfo: action.payload };
 
     case "USER_SIGNOUT":
+      // Clear user info and reset cart state
+      localStorage.removeItem("userInfo");
+      localStorage.setItem("cartItems", JSON.stringify([]));
+      localStorage.removeItem("shippingAddress");
+      localStorage.removeItem("paymentMethod");
+
       return { 
         ...state, 
         userInfo: null,
@@ -76,9 +82,13 @@ function reducer(state, action) {
       };
 
     case "SAVE_SHIPPING_ADDRESS":
+      // Save shipping address to the state and localStorage
+      localStorage.setItem("shippingAddress", JSON.stringify(action.payload));
       return { ...state, cart: { ...state.cart, shippingAddress: action.payload } };
 
     case "SAVE_PAYMENT_METHOD":
+      // Save payment method to the state and localStorage
+      localStorage.setItem("paymentMethod", action.payload);
       return { ...state, cart: { ...state.cart, paymentMethod: action.payload } };
 
     default:
