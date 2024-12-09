@@ -1,11 +1,11 @@
-import express from "express";
-import cors from "cors";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import seedRouter from "./routes/seedRoutes.js";
-import productRouter from "./routes/productRoutes.js";
-import UserRouter from "./routes/userRoutes.js";
-import orderRouter from "./routes/orderRoutes.js";
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import seedRouter from './routes/seedRoutes.js';
+import productRouter from './routes/productRoutes.js';
+import UserRouter from './routes/userRoutes.js';
+import orderRouter from './routes/orderRoutes.js';
 
 dotenv.config();
 
@@ -30,9 +30,9 @@ app.use(cors());
 app.use("/api/seed", seedRouter);
 
 // Corrected route for products
-app.use("/api/products", productRouter);  // Fixed typo here
+app.use("/api/products", productRouter);
 app.use("/api/users", UserRouter);
-app.use("/api/order,",orderRouter)
+app.use("/api/orders", orderRouter); // Fixed typo
 
 // Error handling middleware
 app.use((err, req, res, next) => {
