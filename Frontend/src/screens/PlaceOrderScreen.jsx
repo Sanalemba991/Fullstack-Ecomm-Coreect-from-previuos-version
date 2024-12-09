@@ -2,8 +2,9 @@ import React, { useContext, useEffect, useReducer } from 'react';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
-import { Store } from '../Store';
-import { useReducer } from 'react';
+import { Store } from '../Store.jsx';
+
+import {Loading} from "../components/Loading.jsx"
 
 
 const reducer = (state, action) => {
@@ -23,9 +24,9 @@ function PlaceOrderScreen() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
   const navigate = useNavigate();
-  const [{loading,error},dispatch]=useReducer(reducer,{
+  const [{loading},dispatch]=useReducer(reducer,{
     loading:false,
-    error:'',
+    
   });
 
   // Helper function to round numbers to two decimal places
@@ -178,6 +179,7 @@ function PlaceOrderScreen() {
           >
             Place Order
           </button>
+          {loading && <Loading></Loading>}
         </div>
       </div>
     </div>
