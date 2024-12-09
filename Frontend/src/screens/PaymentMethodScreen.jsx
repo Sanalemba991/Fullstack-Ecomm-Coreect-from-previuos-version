@@ -55,7 +55,7 @@ function PaymentMethodScreen() {
               onChange={(e) => setPaymentMethodName(e.target.value)}
               checked={paymentMethodName === 'Stripe'}
             />
-            <label htmlFor="Stripe">Credit Card</label>
+            <label htmlFor="Stripe"> Stripe</label>
           </div>
 
           <button type="submit">Continue</button>
